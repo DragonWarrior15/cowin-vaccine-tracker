@@ -1,9 +1,12 @@
 import logging
 # define logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.INFO) # set the level of logger first
+# f_handler = logging.StreamHandler('logs')
 f_handler = logging.FileHandler('logs')
 f_handler.setLevel(logging.INFO)
-f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+f_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 f_handler.setFormatter(f_format)
 logger.addHandler(f_handler)
 
@@ -33,7 +36,7 @@ def driver():
 
     # create the folder
     curr_folder = create_folder(curr_dt, parent_dir)
-    logger.info(f'Created folder {curr_folder}')
+    logger.info('Created folder %s', curr_folder)
 
     # get data from api
     curr_data = run_api()
@@ -46,10 +49,13 @@ def driver():
     # add a last modified column
     curr_data['ts'] = curr_dt.strftime('%Y-%m-%d %H-%M')
 
+    # filter only rows with available slots
+    curr_data = curr_data.loc[curr_data['available_capacity'] > 0, :]
+
     # save to disk
     curr_data.to_csv(os.path.join(curr_folder, 'slots_data.csv'), index=False)
 
-    logger.info(f'Driver run complete')
+    logger.info('Driver run complete')
 
 # create a folder with current date time to store the data
 def create_folder(curr_dt, parent_dir):
@@ -100,7 +106,7 @@ def run_api():
 
     combined = []
     for district_id in custom_district_list:
-        logger.info(f'Running district id {district_id}')
+        logger.info('Running district id %s', district_id)
         url = vaccine_calendar_by_district_url + '?district_id={}&date={}'\
                         .format(district_id, date_today.strftime('%d-%m-%Y'))
 
@@ -109,7 +115,7 @@ def run_api():
             sessions_list = sessions_list.get('centers')
             combined += sessions_list
         except:
-            logger.warning(f'district id {district_id} failed, ignoring')
+            logger.warning('district id %s failed, ignoring', district_id)
             pass
 
     logger.info('Districts API run complete')
@@ -117,7 +123,7 @@ def run_api():
     return combined
 
 def get_raw_data_df(json_data):
-    logger.info(f'Converting JSON to DataFrame')
+    logger.info('Converting JSON to DataFrame')
     # columns to pick from json
     cols_center = ['name', 'address', 'block_name', 'state_name', 'district_name',
                     'pincode', 'from', 'to', 'fee_type']
@@ -135,7 +141,7 @@ def get_raw_data_df(json_data):
                     df_dict[col].append(y[col])
 
     centers_df = pd.DataFrame(df_dict)[cols_center + cols_session]
-    logger.info(f'conversion complete')
+    logger.info('conversion complete')
     return centers_df
 
 if __name__ == '__main__':
