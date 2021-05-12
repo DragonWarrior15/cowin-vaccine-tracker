@@ -1,10 +1,13 @@
+# adding to cron
+# * * * * * cd path_to_project ; path_to_python_including_env data_collector.py
+
 import logging
 # define logging
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO) # set the level of logger first
+logger.setLevel(logging.WARNING) # set the level of logger first
 # f_handler = logging.StreamHandler('logs')
 f_handler = logging.FileHandler('logs')
-f_handler.setLevel(logging.INFO)
+f_handler.setLevel(logging.WARNING)
 # f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 f_format = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 f_handler.setFormatter(f_format)
@@ -146,7 +149,7 @@ def get_raw_data_df(json_data):
 
 if __name__ == '__main__':
     # hacky scheduler
-    while(1):
-        t = datetime.now()
-        if(t.second == 0):
-            driver()
+    # while(1):
+        # t = datetime.now()
+        # if(t.second == 0):
+    driver()
